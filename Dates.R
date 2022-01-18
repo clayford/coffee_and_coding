@@ -40,7 +40,7 @@ as.numeric(d2)
 # - extract day of week, month, year
 # - proper ordering of days and months
 # - calculate elapsed time
-# - proper formatting in plots
+# - properly formatted axes in plots
 
 month(d)
 month(d, label = TRUE)
@@ -56,12 +56,20 @@ mday(d)
 yday(d) # year day
 
 
-d2 <- c("4/5/73", "1/10/22")
-d2 <- mdy(d2)
+start_d <- mdy("4/5/1973")
+end_d <- mdy("1/10/2022")
 
-d2[2] - d2[1]
-interval(d2[1], d2[2])
-time_length(interval(d2[1], d2[2]), unit = "years")
+# interval - elapsed time between start and end date
+# stored as seconds, even if time not specified
+interval(start_d, end_d)
+start_d %--% end_d
+
+
+
+time_length(start_d %--% end_d, unit = "years")
+time_length(start_d %--% end_d, unit = "months")
+time_length(start_d %--% end_d, unit = "weeks")
+time_length(start_d %--% end_d, unit = "days")
 
 # St. Helens volcano
 # https://volcano.si.edu/volcano.cfm?vn=321050
@@ -79,12 +87,26 @@ str(msh)
 
 msh$start <- ymd(msh$start)
 msh$stop <- ymd(msh$stop)
-msh$interval <- interval(msh$start, msh$stop) |> time_length("days")
+msh$interval <- interval(msh$start, msh$stop)
+# msh$interval <- interval(msh$start, msh$stop) |> time_length("days")
 msh
+str(msh)
+msh$interval@.Data
 
-msh$interval_days <- msh$stop - msh$start
-msh$interval_months <- interval(msh$start, msh$stop) |> time_length("months")
+# Duration: elapsed time, with no start date
+as.duration(msh$interval)
+as.duration(msh$interval) |> time_length(unit = "years")
+as.duration(msh$interval) |> time_length(unit = "months") # w/ decimals
+as.duration(msh$interval) |> time_length(unit = "weeks")
+as.duration(msh$interval) |> time_length(unit = "days")
+as.duration(msh$interval) |> time_length(unit = "hours")
 
+# Period: elapsed "clock/calendar" time, with no start date
+as.period(msh$interval)
+as.period(msh$interval, unit = "months") # w/ days
+as.period(msh$interval, unit = "days")
+as.period(msh$interval, unit = "hours") 
+as.period(msh$interval, unit = "minutes") 
 
 # La Palma volcano (Spain)
 # last 7 events
@@ -110,3 +132,10 @@ lp
 # - extract components
 # - duration of events
 # - time between events
+
+# Timespans
+
+# Interval
+
+# Period
+# Duration
