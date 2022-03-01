@@ -1,0 +1,137 @@
+---
+title: "Mathematical Annotation in R"
+output: html_notebook
+---
+
+In this notebook, we demonstrate how to include mathematical symbols and formulas in plots created with R.
+
+Base R provides a TeX-like language for defining mathematical expressions. They are documented on the `plotmath` help page, which can be accessed by typing in the R console `?plotmath`. This language can be used in either base R graphics or ggplot2.
+
+plotmath expressions can be used in titles, subtitles, axis labels, and annotations within the plot.
+
+To create a mathematical expression using the plotmath language, we need to place the expression inside the `expression()` function. 
+
+## Greek symbols
+
+Here's a simple plot with no mathematical notation. It's a standard Normal distribution.
+
+```{r}
+curve(dnorm(x), from = -3, to = 3)
+```
+
+Now we add an expression to the title of the plot: "mu == 0". Two equal signs is rendered as a single equals sign. The keyword mu is rendered as a lower case Greek mu. 
+
+```{r}
+curve(dnorm(x), from = -3, to = 3,
+      main = expression(mu == 0))
+```
+
+All letters of the Greek alphabet are available to use:
+
+- alpha -- omega (lower case)
+- Alpha -- Omega (upper case)
+
+Equalities are defined the same as they are in R code:
+
+- x == y
+- x != y (not equal)
+- x < y	
+- x <= y	
+- x > y	
+- x >= y	
+
+Other common expressions
+
+- x^2	  
+- sqrt(x)
+- sqrt(x, y)	(yth root of x)
+- x*y	(juxtapose x and y)
+- x %+-% y	(x plus or minus y)
+- x %*% y	(x times y)
+- x[i]	(x subscript i)
+
+
+## Exercise 1
+
+The following is an exponential distribution with lambda = 1. Add a title to the plot that says lambda = 1, where lambda is rendered as a lower case Greek symbol. Use the `main` argument to add the title.
+
+```{r}
+curve(dexp(x), from = 0, to = 6, main = expression(lambda == 1))
+```
+
+## Combining symbols and text
+
+To mix text and math symbols, we use the `paste()` function within `expression()`. For example, let's include "and sigma == 1" in the plot title.
+
+```{r}
+curve(dnorm(x), from = -3, to = 3,
+      main = expression(paste(mu == 0, " and ", sigma == 1)))
+```
+
+
+## Exercise 2
+
+Add a title to the following plot that says lambda = 1 and x >= 0. Use the `main` argument to add the title.
+
+```{r}
+curve(dexp(x), from = 0, to = 6, 
+      main = expression(paste(lambda == 1, " and ", x >= 0)))
+
+```
+
+## Building plotmath expressions
+
+The previous two examples were simple. However math expressions can often be complicated and take time to create. It can help to have a "sandbox" to gradually build and test you plotmath expressions. Here's one way using `plot()` and `text()`.
+
+`plot(1,1, type = "n")` creates an empty plot. `text(1,1, expression())` will plot your expression in the middle of the plot.
+
+Once you're done with your expression, you can copy and paste it into the R code where needed. Or save as an object.
+
+```{r}
+plot(1,1, type = "n")
+text(1,1, expression(y == beta[0] + beta[1]*x + epsilon))
+```
+
+Let's say we're happy with that. We can save it.
+
+```{r}
+e <- expression(y == beta[0] + beta[1]*x + epsilon)
+```
+
+And then use it in a plot. For example.
+
+```{r}
+m <- lm(dist ~ speed, cars)
+plot(dist ~ speed, cars)
+abline(m)
+text(7, 80, e)
+```
+
+ggplot2 also allows plotmath expressions, but how use them depends on where you want them. 
+
+In `annotate()`, `geom_text()` and `geom_label()`, they have to be strings, not expressions, and include the argument `parse = TRUE`.
+
+In `labs()` and `ggtitle()` use plotmath expressions just as you would in base R.
+
+```{r message=FALSE}
+library(ggplot2)
+e <- expression(y == beta[0] + beta[1]*x + epsilon)
+e2 <- "y == beta[0] + beta[1]*x + epsilon"
+ggplot(cars) +
+  aes(x = speed, y = dist) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE) +
+  annotate("text", 7, 80, label = e2, parse = TRUE) +
+  labs(title = e)
+```
+
+
+Another example:
+
+```{r}
+plot(1, 1, type = "n")
+text(1, 1, )
+```
+
+
+`sum(x[i], i==1, n)`

@@ -8,6 +8,15 @@
 # plot symbols in plot titles and axis labels
 # plot expressions in plot title
 
+# Standard Normal curve: N(0,1)
+curve(dnorm(x), from = -3, to = 3, 
+      main = "Normal Dist'n with mean = 0 and sd = 1")
+
+# plotmath expression
+curve(dnorm(x), from = -3, to = 3, 
+      main = expression(paste("Normal Dist'n with ", mu == 0, " and ",
+                              sigma == 1)))
+
 # exponential function
 curve(dexp(x, rate = 2), from = 0, to = 3, 
       main = expression(f(x) == lambda * e^{-lambda * x}))
@@ -23,7 +32,9 @@ library(ggplot2)
 ggplot() +
   geom_function(fun = dexp) +
   xlim(0, 3) +
-  labs(title = expression(paste(f(x) == lambda * e^{-lambda * x}, ", where ", lambda == 2)), y = expression(f(x)))
+  labs(title = expression(paste(f(x) == lambda * e^{-lambda * x}, ", where ", lambda == 2)), 
+       x = expression(x),
+       y = expression(f(x)))
 
 
 # annotate regression results
@@ -124,7 +135,7 @@ p + labs(title = "New plot title", subtitle = "A subtitle")
 p + labs(caption = "(based on data from ...)")
 
 # The plot tag appears at the top-left, and is typically used
-# for labelling a subplot with a letter.
+# for labeling a subplot with a letter.
 p + labs(title = "title", tag = "A")
 # If you want to remove a label, set it to NULL.
 p +
