@@ -5,7 +5,7 @@ output: html_notebook
 
 In this notebook, we demonstrate how to include mathematical symbols and formulas in plots created with R.
 
-Base R provides a TeX-like language for defining mathematical expressions. They are documented on the `plotmath` help page, which can be accessed by typing in the R console `?plotmath`. This language can be used in either base R graphics or ggplot2.
+Base R provides a LaTeX-like language for defining mathematical expressions. They are documented on the `plotmath` help page, which can be accessed by typing in the R console `?plotmath`. This language can be used in either base R graphics or ggplot2.
 
 plotmath expressions can be used in titles, subtitles, axis labels, and annotations within the plot.
 
@@ -61,7 +61,7 @@ curve(dexp(x), from = 0, to = 6, main = expression(lambda == 1))
 
 ## Combining symbols and text
 
-To mix text and math symbols, we use the `paste()` function within `expression()`. For example, let's include "and sigma == 1" in the plot title.
+To mix text and math symbols, we use the `paste()` function within `expression()`. For example, let's include "and sigma == 1" in the plot title for our standard normal curve.
 
 ```{r}
 curve(dnorm(x), from = -3, to = 3,
@@ -81,9 +81,10 @@ curve(dexp(x), from = 0, to = 6,
 
 ## Building plotmath expressions
 
-The previous two examples were simple. However math expressions can often be complicated and take time to create. It can help to have a "sandbox" to gradually build and test you plotmath expressions. Here's one way using `plot()` and `text()`.
+The previous two examples were simple. However math expressions can often be complicated and take time to create. It can help to have a "sandbox" to gradually build and test your plotmath expressions. Here's one way using `plot()` and `text()`.
 
-`plot(1,1, type = "n")` creates an empty plot. `text(1,1, expression())` will plot your expression in the middle of the plot.
+`plot(1,1, type = "n")` creates an empty plot. 
+`text(1,1, expression())` will plot your expression in the middle of the plot.
 
 Once you're done with your expression, you can copy and paste it into the R code where needed. Or save as an object.
 
@@ -102,16 +103,26 @@ And then use it in a plot. For example.
 
 ```{r}
 m <- lm(dist ~ speed, cars)
-plot(dist ~ speed, cars)
+plot(dist ~ speed, cars, main = e)
 abline(m)
 text(7, 80, e)
 ```
 
+## Exercise 3
+
+```{r}
+plot(1, 1, type = "n")
+text(1, 1, expression(A == pi * r^2))
+```
+
+
+
+## plotmath with ggplot2
+
 ggplot2 also allows plotmath expressions, but how use them depends on where you want them. 
 
-In `annotate()`, `geom_text()` and `geom_label()`, they have to be strings, not expressions, and include the argument `parse = TRUE`.
-
-In `labs()` and `ggtitle()` use plotmath expressions just as you would in base R.
+- In `annotate()`, `geom_text()` and `geom_label()`, they have to be strings, not expressions, and include the argument `parse = TRUE`.
+- In `labs()` and `ggtitle()` use plotmath expressions just as you would in base R.
 
 ```{r message=FALSE}
 library(ggplot2)
@@ -122,16 +133,111 @@ ggplot(cars) +
   geom_point() +
   geom_smooth(method = "lm", se = FALSE) +
   annotate("text", 7, 80, label = e2, parse = TRUE) +
-  labs(title = e)
+  labs(title = e) 
 ```
 
+To change the size of your expression:
 
-Another example:
+- In `annotate()`, `geom_text()` and `geom_label()`, use the `size` argument to specify point size in mm. 
+- for expressions in `labs()` and `ggtitle()`, you need to use the `theme()` function and modify the appropriate argument with `element_text(size = x)`, where x is the point size as specified in programs like MS Word. 
+
+For example:
 
 ```{r}
-plot(1, 1, type = "n")
-text(1, 1, )
+ggplot(cars) +
+  aes(x = speed, y = dist) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE) +
+  annotate("text", 7, 80, label = e2, parse = TRUE, size = 10) + 
+  labs(title = e) +
+  theme(title = element_text(size = 12))
+```
+
+```{r}
+ggplot(iris) +
+  aes(x = Petal.Width, y = Petal.Length, color = Species) +
+  geom_point() +
+  scale_color_discrete(expression(mu), 
+                       labels = list(expression(mu*1), 
+                                     expression(mu*2), 
+                                     expression(mu*3)))
+```
+
+```{r}
+n <- 200
+g <- gl(n = 3, k = n)
+set.seed(1)
+y <- c(rnorm(n, sd = 5),
+       rnorm(n, sd = 10),
+       rnorm(n, sd = 20))
+d <- data.frame(y, g)
+```
+
+```{r}
+ggplot(d) +
+  aes(x = y, fill = g) +
+  geom_density(alpha = 1/3)
+```
+
+```{r}
+ggplot(d) +
+  aes(x = y, fill = g) +
+  geom_density(alpha = 1/3) +
+  scale_fill_discrete(expression(sigma), labels = 
+                        list(expression(sigma == 5),
+                             expression(sigma == 10),
+                             expression(sigma == 20)))
+```
+
+```{r}
+library(latex2exp)
+
+TeX(r"($y = \beta_0 + \beta_1 x + \epsilon$)", output = "character")
+
+```
+
+$$y = \beta_0 + \beta_1 x + \epsilon$$
+
+```{r}
+ggplot() +
+  geom_function(aes(color = "1"), fun = dgamma, args = list(shape = 1, rate = 1/4)) +
+  geom_function(aes(color = "2"), fun = dgamma, args = list(shape = 2, rate = 1/4)) +
+  geom_function(aes(color = "3"), fun = dgamma, args = list(shape = 3, rate = 1/4)) +
+  xlim(0, 30) +
+  scale_color_discrete(expression(alpha))
+```
+
+```{r}
+s <- matrix(c(1,0.5,0.5,1), ncol = 2)
+set.seed(2)
+d2 <- MASS::mvrnorm(n = 75, mu = c(0,0), Sigma = s) |> as.data.frame()
+r <- cor(d2)[1,2]
+ggplot(d2) +
+  aes(V1, V2) +
+  geom_point() +
+  labs(title = bquote(rho == .(r)))
 ```
 
 
-`sum(x[i], i==1, n)`
+```{r}
+e <- rexp(100, rate = 7)
+r <- 1/mean(e)
+hist(e, main = bquote(hat(lambda) == .(r)))
+```
+
+```{r}
+m <- lm(dist ~ speed, data = cars)
+summary(m)
+
+```
+
+
+```{r}
+ggplot(cars) +
+  aes(x = speed, y = dist) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE) +
+  labs(title = expression(beta[1] == 3.93 %+-% 0.84)) +
+  annotate("text", 7, 80, label = "R^2 == 0.64", parse = TRUE)
+```
+
