@@ -131,8 +131,8 @@ e2 <- "y == beta[0] + beta[1]*x + epsilon"
 ggplot(cars) +
   aes(x = speed, y = dist) +
   geom_point() +
-  geom_smooth(method = "lm", se = FALSE) +
-  annotate("text", 7, 80, label = e2, parse = TRUE) +
+  geom_smooth(method = "lm", formula = "y ~ x", se = FALSE) +
+  annotate("text", 7, 80, label = e) +
   labs(title = e) 
 ```
 
@@ -148,7 +148,7 @@ ggplot(cars) +
   aes(x = speed, y = dist) +
   geom_point() +
   geom_smooth(method = "lm", se = FALSE) +
-  annotate("text", 7, 80, label = e2, parse = TRUE, size = 10) + 
+  annotate("text", 7, 80, label = e, size = 10) + 
   labs(title = e) +
   theme(title = element_text(size = 12))
 ```

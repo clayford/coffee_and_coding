@@ -13,7 +13,7 @@ library(lubridate)
 # Date-times formatted as number of seconds since Jan 1, 1970
 
 # Dates
-d <- "January 10, 2022"
+d <- "March 31, 2022"
 typeof(d)
 
 d <- mdy(d)
@@ -70,6 +70,7 @@ time_length(start_d %--% end_d, unit = "years")
 time_length(start_d %--% end_d, unit = "months")
 time_length(start_d %--% end_d, unit = "weeks")
 time_length(start_d %--% end_d, unit = "days")
+time_length(start_d %--% end_d, unit = "minutes")
 
 # St. Helens volcano
 # https://volcano.si.edu/volcano.cfm?vn=321050
@@ -139,3 +140,10 @@ lp
 
 # Period
 # Duration
+
+
+
+int2 <- interval(ymd("1900-01-01"), ymd("1999-12-31"))
+time_length(int2, "year")
+time_length(as.duration(int2), "year")
+time_length(as.period(int2), "year")

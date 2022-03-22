@@ -1,0 +1,261 @@
+---
+title: "Working with Dates in R"
+author: "Clay Ford"
+date: '2022-03-21'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Introduction
+
+Today's date is March 31, 2022. The next coffee and coding session is scheduled for April 7, 2022. How many days from now does that take place? We know the answer is 7 days, but how would R know that? How can it know that April 7 - March 31 = 7 days?
+
+Or how can R know that 3 hours elapsed between March 31, 2022 11:00 pm and April 1, 2022 2:00 am?
+
+To help R make these calculations, we can format dates as a "Date" class and date-times as something called a "POSIXct" class. (The name "POSIXct" isn't terribly important for doing this.)
+
+When dates and date-times are properly formatted in R, we can...
+
+- calculate elapsed time
+- extract day of week, month, year
+- properly order of days and months (Jan, Feb, Mar) in plots and tables
+- properly format axis labels in plots
+
+
+## Lubridate
+
+The **lubridate** package makes working with dates and times in R relatively easy. It has a number of convenience functions for formatting dates and times that only require you to identify the ordering of the date/time components. It is a large and powerful package and this presentation is not comprehensive.
+
+Below we load the package. Notice it _masks_ four variables from the **base** package: `date`, `intersect`, `setdiff`, `union.` That means if you use those functions you'll be using the **lubridate** version of those functions instead of the **base** version. However the **lubridate** versions are pretty much the same as the **base** versions, with some extra functionality. (In other words, don't worry about this message.)
+
+```{r}
+library(lubridate)
+```
+
+## Formatting dates
+
+Below we enter today's date as a string. The `str()` function confirms this with the "chr" label.
+
+```{r}
+d <- "March 31, 2022"
+str(d)
+```
+
+To format as a date using **lubridate**, we use the `mdy()` function since the date is ordered as Month, Day, Year. **lubridate** provides functions using every permutation of the letters "m", "d", "y".
+
+The formatted date prints like character string, but is actually a number.
+
+```{r}
+d <- mdy(d)
+str(d)
+```
+
+A Date object is stored as the _number of days_ since January 1, 1970. (This is the default "origin" date in R.) We can verify this by using the `as.numeric()` function.
+
+```{r}
+as.numeric(d)
+```
+
+Again, every permutation of m, d, y is available as a function. Below we demonstrate `ymd()` and `dmy()`. The `|>` operator is the base R pipe. It takes the output of the previous function and sends it to the first argument of the next function.
+
+```{r}
+ymd("2003-02-24") |> as.numeric()
+```
+
+
+```{r}
+dmy("11 May 1996") |> as.numeric()
+```
+
+Add `_hms` for dates with hours, minutes and seconds. This will also work with any permutation of "m", "d", "y". Instead of a "Date" object we have a "POSIXct" object. (Some people just refer to this "date-time".)
+
+```{r}
+d2 <- mdy_hms("Feb 23, 2003 3:45:23")
+str(d2)
+```
+
+The output looks like a string but is actually stored as _number of seconds_ since January 1, 1970.
+
+```{r}
+as.numeric(d2)
+```
+
+We can format dates and date-times using base R with the `as.Date()` function, but it usually requires that we include a _strptime_ specification. For example:
+
+```{r}
+d <- "March 31, 2022"
+as.Date(d, format = "%B %d, %Y")
+```
+
+See `?strptime` for a full list of strptime specifications.
+
+When working with dates in a data frame, it's common to update or overwrite the column with the Date or date-time format. For example:
+
+```{r}
+dat <- data.frame(date = c("March 24, 2022", 
+                           "March 31, 2022", 
+                           "April 7, 2022"))
+dat$date <- mdy(dat$date)
+str(dat)
+```
+
+
+## Exercise 1
+
+The following data frame contains the start and end dates for the last four eruptive periods of Mount St Helens volcano (source: https://volcano.si.edu/volcano.cfm?vn=321050) 
+
+Update the "start" and "stop" columns to be Date objects using the appropriate lubridate function.
+
+```{r}
+msh <- data.frame(start = c("2004 Oct 1", 
+                            "1990 Nov 5", 
+                            "1989 Dec 7", 
+                            "1980 Mar 27"),
+                    stop = c("2008 Jan 27", 
+                             "1991 Feb 14", 
+                             "1990 Jan 6", 
+                             "1986 Oct 28"))
+msh
+```
+
+```{r}
+msh$start <- ymd(msh$start)
+msh$stop <- ymd(msh$stop)
+```
+
+
+## Extracting date components
+
+Once we have dates formatted in R, we can easily extract information such as month, day, and year. This allows us to examine our data, say, based on month. How did rainfall differ from April to May? Do more car wrecks happen on Mondays versus Fridays?
+
+Three commonly used functions are `month()`, `wday()`, and `year()`. They extract month, day of the week, and year, respectively. Let's demonstrate all three on a small data frame.
+
+```{r}
+dat <- data.frame(date = c("3/4/2005", "2/7/2006", "12/21/2004"))
+dat$date <-  mdy(dat$date)
+dat
+```
+
+Add three new columns to the data frame by extracting components from the date. The default values for `month()` and `wday()` are digits.
+
+```{r}
+dat$month <- month(dat$date)
+dat$wday <- wday(dat$date)
+dat$year <- year(dat$date)
+dat
+```
+
+If we set `label = TRUE` and `abbr = FALSE` we get full character labels that are stored internally as ordered factors. That ensures January comes before February, etc, when we create tables or plots.
+
+```{r}
+dat$month <- month(dat$date, label = TRUE, abbr = FALSE)
+dat$wday <- wday(dat$date, label = TRUE, abbr = FALSE)
+dat
+```
+
+## Exercise 2
+
+Using our Mount St. Helens data frame from exercise 1:
+
+2. Add a column called "start_day" that contains the day of the week the eruptive period started.
+2. Add a column called "stop_day" that contains the day of the week the eruptive period stopped.
+
+
+```{r}
+msh$start_year <- wday(msh$start, label = TRUE, abbr = FALSE)
+msh$stop_year <- wday(msh$stop, label = TRUE, abbr = FALSE)
+msh
+```
+
+
+## Timespans
+
+**lubridate** provides three timespan classes:
+
+1. Duration
+2. Interval
+3. Period
+
+Duration: a span of time measured in seconds, even if time not specified. There is no start date. (Eg, the subject was in the hospital 3 days.)
+
+Interval: a span of time measured in seconds with start and end dates, even if time not specified. (Eg, the subject was in the hospital from March 1, 2020 - March 4, 2020.) 
+
+Period: a span of time measured in units larger than seconds, such as months. It allows us to perform calculations in calendar time as opposed to absolute number of seconds. (Eg, the subject was in the hospital 1 month.)
+
+Let's demonstrate all three by starting with an interval. Define an interval with the `interval()` function or interval operator, `%--%`
+
+```{r}
+# World War I
+start_d <- mdy("Jul 28, 1914")
+end_d <- mdy("Nov 11, 1918")
+interval(start_d, end_d)
+```
+
+Or using the interval operator:
+
+```{r}
+int <- start_d %--% end_d
+int
+```
+
+How long did World War I last? We can convert to a duration using `as.duration()`. The output is in seconds and with approximate years in parentheses.
+
+```{r}
+as.duration(int)
+```
+
+We can convert to a period using `as.period()`. The output is in calendar time.
+
+```{r}
+as.period(int)
+```
+
+Finally the `time_length()` function can be useful to specify which units to calculate for a time span.
+
+How many weeks did World War I last?
+
+```{r}
+time_length(int, unit = "weeks")
+```
+
+How many months did World War I last?
+
+```{r}
+time_length(int, unit = "months")
+```
+
+## Exercise 3
+
+Recall our data on the Mount St. Helens volcano.
+
+```{r}
+msh
+```
+
+1. Add a column called "duration" the measures how long the eruptive period lasted in days. Hint: first create an interval, then specify how to calculate the units.
+
+```{r}
+msh$duration <- interval(msh$start, msh$stop) |> 
+  time_length(unit = "days")
+msh
+```
+
+2. Add a column called "days_since" that measures how many days passed between the previous eruptive period. The last entry will be NA since we don't have information prior to 1980. 
+
+Hint: the start of the interval will be the _previous_ eruptive period's stop date. The end of the interval will be the _next_ eruptive period's start date. Use `dplyr::lead(msh$stop)` as the start of your interval. The `lead()` function shifts values in a vector forward by one place and leaves an `NA` in the last place. 
+
+```{r}
+msh$days_since <- interval(dplyr::lead(msh$stop), msh$start) |>
+  time_length(unit = "days")
+msh
+```
+
+3. How many days have passed since the last eruptive period finished on 2008-01-27?
+
+```{r}
+interval(msh$stop[1], ymd("2022-03-31")) |> time_length(unit = "days")
+```
+
