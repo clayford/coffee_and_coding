@@ -17,7 +17,7 @@ Or how can R know that 3 hours elapsed between March 31, 2022 11:00 pm and April
 
 To help R make these calculations, we can format dates as a "Date" class and date-times as something called a "POSIXct" class. (The name "POSIXct" isn't terribly important for doing this.)
 
-When dates and date-times are properly formatted in R, we can...
+When dates and date-times are properly formatted in R, we can (among other things)...
 
 - calculate elapsed time
 - extract day of week, month, year
@@ -107,7 +107,7 @@ str(dat)
 
 The following data frame contains the start and end dates for the last four eruptive periods of Mount St Helens volcano (source: https://volcano.si.edu/volcano.cfm?vn=321050) 
 
-Update the "start" and "stop" columns to be Date objects using the appropriate lubridate function.
+Format the "start" and "stop" columns as Dates using the appropriate lubridate function.
 
 ```{r}
 msh <- data.frame(start = c("2004 Oct 1", 
@@ -156,6 +156,12 @@ dat$wday <- wday(dat$date, label = TRUE, abbr = FALSE)
 dat
 ```
 
+Other component functions that may be of interest:
+
+- yday: day of year
+- mday: day of month
+- qday: day of the quarter
+
 ## Exercise 2
 
 Using our Mount St. Helens data frame from exercise 1:
@@ -183,9 +189,9 @@ Duration: a span of time measured in seconds, even if time not specified. There 
 
 Interval: a span of time measured in seconds with start and end dates, even if time not specified. (Eg, the subject was in the hospital from March 1, 2020 - March 4, 2020.) 
 
-Period: a span of time measured in units larger than seconds, such as months. It allows us to perform calculations in calendar time as opposed to absolute number of seconds. (Eg, the subject was in the hospital 1 month.)
+Period: a span of time measured in units larger than seconds, such as months. It allows us to perform calculations in calendar time as opposed to absolute number of seconds. (Eg, the subject was in the hospital 1 month, from Feb 1 - Mar 1.)
 
-Let's demonstrate all three by starting with an interval. Define an interval with the `interval()` function or interval operator, `%--%`
+Let's demonstrate all three by starting with an interval. We can define an interval with the `interval()` function or interval operator, `%--%`
 
 ```{r}
 # World War I
@@ -194,11 +200,17 @@ end_d <- mdy("Nov 11, 1918")
 interval(start_d, end_d)
 ```
 
-Or using the interval operator:
+Or using the interval operator. This time we save the result as "int". 
 
 ```{r}
 int <- start_d %--% end_d
 int
+```
+
+The print as character, but internally they are stored as number of seconds.
+
+```{r}
+as.numeric(int)
 ```
 
 How long did World War I last? We can convert to a duration using `as.duration()`. The output is in seconds and with approximate years in parentheses.
@@ -213,7 +225,7 @@ We can convert to a period using `as.period()`. The output is in calendar time.
 as.period(int)
 ```
 
-Finally the `time_length()` function can be useful to specify which units to calculate for a time span.
+Finally the `time_length()` function can be useful to specify which units to use to calculate the length of a time span.
 
 How many weeks did World War I last?
 
@@ -227,6 +239,13 @@ How many months did World War I last?
 time_length(int, unit = "months")
 ```
 
+How many years have passed since World War I as of today? Notice we can use the lubridate function `today()` to get today's date as a properly formatted date. This is also a good time to use a pipe operator.
+
+```{r}
+interval(end_d, today()) |> time_length(unit = "years")
+```
+
+
 ## Exercise 3
 
 Recall our data on the Mount St. Helens volcano.
@@ -235,7 +254,7 @@ Recall our data on the Mount St. Helens volcano.
 msh
 ```
 
-1. Add a column called "duration" the measures how long the eruptive period lasted in days. Hint: first create an interval, then specify how to calculate the units.
+1. Add a column called "duration" that measures how long the eruptive period lasted in days. Hint: first create an interval, then specify how to calculate the units. A pipe would be good to use here.
 
 ```{r}
 msh$duration <- interval(msh$start, msh$stop) |> 
@@ -253,9 +272,9 @@ msh$days_since <- interval(dplyr::lead(msh$stop), msh$start) |>
 msh
 ```
 
-3. How many days have passed since the last eruptive period finished on 2008-01-27?
+3. How many days have passed since the last eruptive period finished on 2008-01-27? Hint: the lubridate function `today()` will create a properly formatted Date object for today's date.
 
 ```{r}
-interval(msh$stop[1], ymd("2022-03-31")) |> time_length(unit = "days")
+interval(msh$stop[1], today()) |> time_length(unit = "days")
 ```
 
