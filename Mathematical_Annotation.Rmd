@@ -126,7 +126,7 @@ ggplot2 also allows plotmath expressions, but how use them depends on where you 
 
 ```{r message=FALSE}
 library(ggplot2)
-e <- expression(y == beta[0] + beta[1]*x + epsilon)
+e <- expression(y == beta[0] + beta[1]*x + epsilon[i])
 e2 <- "y == beta[0] + beta[1]*x + epsilon"
 ggplot(cars) +
   aes(x = speed, y = dist) +
@@ -153,15 +153,6 @@ ggplot(cars) +
   theme(title = element_text(size = 12))
 ```
 
-```{r}
-ggplot(iris) +
-  aes(x = Petal.Width, y = Petal.Length, color = Species) +
-  geom_point() +
-  scale_color_discrete(expression(mu), 
-                       labels = list(expression(mu*1), 
-                                     expression(mu*2), 
-                                     expression(mu*3)))
-```
 
 ```{r}
 n <- 200
